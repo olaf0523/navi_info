@@ -32,6 +32,12 @@ export const icons = {
   external: svg('<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"/>', 18),
   inbox: svg('<path d="M3.5 13.5 6 5.5A1.5 1.5 0 0 1 7.4 4.5h9.2A1.5 1.5 0 0 1 18 5.5l2.5 8"/><path d="M3.5 13.5v5a1.5 1.5 0 0 0 1.5 1.5h14a1.5 1.5 0 0 0 1.5-1.5v-5h-5a3.5 3.5 0 0 1-7 0Z"/>', 22),
 
+  filter: svg('<path d="M3.5 5h17l-6.5 7.5v5.5l-4 2v-7.5Z"/>', 18),
+  sort: svg('<path d="M7 4v16M3.5 7.5 7 4l3.5 3.5M17 20V4m-3.5 12.5L17 20l3.5-3.5"/>', 18),
+  sliders: svg('<path d="M4 6h9m4 0h3M4 12h3m4 0h9M4 18h11m4 0h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>', 18),
+  bookmark: svg('<path d="M6.5 3.5h11a1 1 0 0 1 1 1v16l-6.5-4-6.5 4v-16a1 1 0 0 1 1-1Z"/>', 18),
+  xSmall: svg('<path d="m7 7 10 10M17 7 7 17"/>', 16),
+
   // Performance categories
   monitor: svg('<rect x="3" y="4" width="18" height="12.5" rx="2"/><path d="M8.5 20.5h7M12 16.5v4"/>', 22),
   globe: svg('<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.3 2.4 3.5 5.2 3.5 8.5s-1.2 6.1-3.5 8.5c-2.3-2.4-3.5-5.2-3.5-8.5s1.2-6.1 3.5-8.5Z"/>', 22),

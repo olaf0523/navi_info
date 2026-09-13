@@ -16,8 +16,15 @@ const sortOptions = {
   capital: '資本金が大きい順',
 };
 const operatorOptions = { gt: 'より大きい', gte: '以上', lt: 'より小さい', lte: '以下', eq: '等しい' };
+const operatorPhrases = { gt: 'より大きい', gte: '以上', lt: 'より小さい', lte: '以下', eq: 'と等しい' };
 const markLabels = { yellow: '黄色', green: '緑色' };
 const CARD_ICONS = ['pin', 'calendar', 'users', 'coins', 'chart', 'arrowRight', 'grid', ...Object.values(CATEGORY_ICON_NAMES)];
+const HERO_WAVE = `<svg class="hero-wave" viewBox="0 0 800 300" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+  <defs><linearGradient id="heroWaveFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="hero-wave-stop-1"/><stop offset="1" class="hero-wave-stop-2"/></linearGradient></defs>
+  <path class="hero-wave-fill" d="M250 0C360 110 470 220 640 232S780 190 800 150V0Z"/>
+  <path class="hero-wave-line" vector-effect="non-scaling-stroke" d="M190 0C320 130 450 250 650 262S780 222 800 190"/>
+  <path class="hero-wave-line is-faint" vector-effect="non-scaling-stroke" d="M330 0C430 90 520 170 680 180S780 150 800 118"/>
+</svg>`;
 const FIRST_BATCH = 36;
 const BATCH = 120;
 const defaultFilters = { search: '', category: 'all', sort: 'source', metric: 'none', operator: 'gt', threshold: '' };
@@ -116,51 +123,78 @@ function shellHtml() {
     <header class="topbar">
       <div class="topbar-inner">
         <a class="brand" href="${import.meta.env.BASE_URL}" aria-label="発注ナビ企業ディレクトリ ホーム">
-          <span class="brand-mark" aria-hidden="true">HN</span>
+          <span class="brand-logo" aria-hidden="true"><span>HN</span></span>
           <span class="brand-text"><small>発注ナビ</small><strong>企業ディレクトリ</strong></span>
         </a>
         <div class="topbar-actions">
-          <span class="topbar-meta"><span class="status-dot" aria-hidden="true"></span>2026.09 データ</span>
+          <span class="topbar-status"><span class="status-dot" aria-hidden="true"></span>2026.09 データ</span>
           ${themeToggleHtml()}
           <button type="button" class="lock-button" data-action="lock" aria-label="ロック">${icons.lock}<span>ロック</span></button>
         </div>
       </div>
     </header>
     <main class="page">
-      <section class="intro">
-        <div class="intro-copy">
-          <p class="eyebrow">Company Directory</p>
-          <h1>つくる会社を、<span>見つける。</span></h1>
-          <p class="intro-lead">発注ナビに掲載された開発会社を、企業情報とカテゴリ別の実績から比較・探索できます。</p>
+      <section class="hero" aria-labelledby="heroTitle">
+        ${HERO_WAVE}
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-mark" aria-hidden="true"></span>Company Directory</p>
+          <h1 id="heroTitle">つくる会社を、<span>見つける。</span></h1>
+          <p class="hero-lead">発注ナビに掲載された開発会社を、企業情報とカテゴリ別の実績から比較・探索できます。</p>
         </div>
         <dl class="kpis">
-          <div class="kpi"><dt>掲載企業</dt><dd data-kpi="companies">0</dd></div>
-          <div class="kpi"><dt>実績掲載企業</dt><dd data-kpi="withPerformance">0</dd></div>
-          <div class="kpi"><dt>実績カテゴリ</dt><dd data-kpi="categories">0</dd></div>
-          <div class="kpi"><dt>マーク済み</dt><dd class="kpi-marks">
-            <span class="kpi-mark" data-color="yellow" title="黄色"><i aria-hidden="true"></i><span class="sr-only">黄色</span><b data-kpi="yellow">0</b></span>
-            <span class="kpi-mark" data-color="green" title="緑色"><i aria-hidden="true"></i><span class="sr-only">緑色</span><b data-kpi="green">0</b></span>
-          </dd></div>
+          <div class="kpi">
+            <dt><span class="kpi-icon" aria-hidden="true">${icons.building}</span>掲載企業</dt>
+            <dd class="kpi-value"><b data-kpi="companies">0</b><small>社</small></dd>
+            <dd class="kpi-sub"><span class="kpi-sub-text">2026年9月時点の<wbr>データ</span></dd>
+          </div>
+          <div class="kpi">
+            <dt><span class="kpi-icon" aria-hidden="true">${icons.chart}</span>実績<wbr>掲載企業</dt>
+            <dd class="kpi-value"><b data-kpi="withPerformance">0</b><small>社</small></dd>
+            <dd class="kpi-sub"><span class="kpi-bar" aria-hidden="true"><span data-kpi-bar></span></span><span class="kpi-sub-text" data-kpi="share">全体の 0%</span></dd>
+          </div>
+          <div class="kpi">
+            <dt><span class="kpi-icon" aria-hidden="true">${icons.tag}</span>実績<wbr>カテゴリ</dt>
+            <dd class="kpi-value"><b data-kpi="categories">0</b><small>種類</small></dd>
+            <dd class="kpi-sub"><span class="kpi-sub-text" data-kpi="topCategory">—</span></dd>
+          </div>
+          <div class="kpi">
+            <dt><span class="kpi-icon" aria-hidden="true">${icons.bookmark}</span>マーク<wbr>済み</dt>
+            <dd class="kpi-value"><b data-kpi="marked">0</b><small>社</small></dd>
+            <dd class="kpi-sub kpi-marks">
+              <span class="kpi-mark" data-color="yellow"><i aria-hidden="true"></i>黄色<b data-kpi="yellow">0</b></span>
+              <span class="kpi-mark" data-color="green"><i aria-hidden="true"></i>緑色<b data-kpi="green">0</b></span>
+            </dd>
+          </div>
         </dl>
       </section>
 
-      <section class="filters" aria-label="検索と絞り込み">
+      <section class="filters" aria-labelledby="filtersTitle">
+        <div class="filters-head">
+          <h2 class="filters-title" id="filtersTitle"><span class="filters-title-icon" aria-hidden="true">${icons.filter}</span>検索と絞り込み</h2>
+          <span class="filters-count" data-filter-count hidden></span>
+          <button type="button" class="reset-button" data-action="reset" data-idle="true" aria-label="条件をリセット">${icons.reset}<span>条件をリセット</span></button>
+        </div>
         <div class="filters-row filters-main">
-          <label class="field field-search">
-            ${icons.search}<span class="sr-only">キーワード検索</span>
-            <input data-filter="search" type="search" autocomplete="off" enterkeyhint="search" placeholder="会社名・所在地・代表者で検索（スペースで複数語）">
-          </label>
+          <div class="field field-search">
+            ${icons.search}
+            <label class="sr-only" for="directorySearch">キーワード検索</label>
+            <input id="directorySearch" data-filter="search" type="search" autocomplete="off" enterkeyhint="search" placeholder="会社名・所在地・代表者で検索（スペースで複数語）">
+            <kbd class="field-kbd" title="「/」キーで検索" aria-hidden="true">/</kbd>
+            <button type="button" class="field-clear" data-action="clear-search" aria-label="キーワードを消去" hidden>${icons.xSmall}</button>
+          </div>
           <label class="field">
+            <span class="field-icon" aria-hidden="true">${icons.tag}</span>
             <span class="field-label">実績カテゴリ</span>
             <select data-filter="category"><option value="all">すべて</option></select>
           </label>
           <label class="field">
+            <span class="field-icon" aria-hidden="true">${icons.sort}</span>
             <span class="field-label">並び順</span>
             <select data-filter="sort">${optionsHtml(sortOptions)}</select>
           </label>
         </div>
         <div class="filters-row filters-numeric">
-          <span class="field-label" id="numericLabel">数値条件</span>
+          <span class="numeric-label" id="numericLabel"><span class="field-icon" aria-hidden="true">${icons.sliders}</span>数値条件</span>
           <div class="numeric-group" role="group" aria-labelledby="numericLabel">
             <select class="numeric-control" data-filter="metric" aria-label="項目"><option value="none">条件なし</option>${optionsHtml(Object.fromEntries(Object.entries(metricOptions).map(([key, option]) => [key, option.label])))}</select>
             <select class="numeric-control" data-filter="operator" aria-label="比較方法" disabled>${optionsHtml(operatorOptions)}</select>
@@ -170,13 +204,13 @@ function shellHtml() {
               <span class="numeric-unit" data-unit aria-hidden="true">—</span>
             </label>
           </div>
-          <button type="button" class="reset-button" data-action="reset">${icons.reset}<span>条件をリセット</span></button>
         </div>
+        <div class="filters-active" data-active-filters hidden></div>
       </section>
 
       <div class="results-bar">
         <p class="results-count" aria-live="polite"></p>
-        <p class="results-hint">色マークはこのブラウザに保存され、再読み込み後も保持されます</p>
+        <p class="results-hint">${icons.bookmark}色マークはこのブラウザに保存され、再読み込み後も保持されます</p>
       </div>
       <div class="company-grid" data-grid></div>
     </main>
@@ -207,6 +241,11 @@ export function mountDirectory(root, { csv, onLock }) {
   const resultsCount = $('.results-count');
   const toTop = $('[data-action="top"]');
   const controls = Object.fromEntries([...root.querySelectorAll('[data-filter]')].map((element) => [element.dataset.filter, element]));
+  const searchField = $('.field-search');
+  const searchClear = $('[data-action="clear-search"]');
+  const activeFilters = $('[data-active-filters]');
+  const filterCount = $('[data-filter-count]');
+  const resetButton = $('.filters-head [data-action="reset"]');
 
   try {
     const { headers, records } = parseCsv(csv);
@@ -332,10 +371,21 @@ export function mountDirectory(root, { csv, onLock }) {
   }
 
   function renderKpis() {
-    const set = (name, value) => { $(`[data-kpi="${name}"]`).textContent = integerFormat.format(value); };
-    set('companies', companies.length);
-    set('withPerformance', companies.filter((company) => company.performance.length).length);
-    set('categories', categories.length);
+    const set = (name, text) => { $(`[data-kpi="${name}"]`).textContent = text; };
+    const withPerformance = companies.filter((company) => company.performance.length).length;
+    const share = companies.length ? Math.round((withPerformance / companies.length) * 100) : 0;
+    const categoryCounts = new Map();
+    for (const company of companies) {
+      for (const entry of company.performance) categoryCounts.set(entry.label, (categoryCounts.get(entry.label) || 0) + 1);
+    }
+    const [topLabel, topCount] = [...categoryCounts].sort((first, second) => second[1] - first[1])[0] || [];
+    const barWidth = Math.max(share, 2);
+    set('companies', integerFormat.format(companies.length));
+    set('withPerformance', integerFormat.format(withPerformance));
+    set('share', `全体の ${share}%`);
+    $('[data-kpi-bar]').style.cssText = `--w:${barWidth}%;--bs:${(10000 / barWidth).toFixed(1)}%`;
+    set('categories', integerFormat.format(categories.length));
+    $('[data-kpi="topCategory"]').innerHTML = topLabel ? `最多：<wbr>${escapeHtml(topLabel)}<wbr>（${integerFormat.format(topCount)}社）` : '—';
     renderMarkCounts();
   }
 
@@ -346,6 +396,7 @@ export function mountDirectory(root, { csv, onLock }) {
       if (mark) counts[mark] += 1;
     }
     for (const color of MARK_COLORS) $(`[data-kpi="${color}"]`).textContent = integerFormat.format(counts[color]);
+    $('[data-kpi="marked"]').textContent = integerFormat.format(counts.yellow + counts.green);
   }
 
   function scheduleRender() {
@@ -353,6 +404,7 @@ export function mountDirectory(root, { csv, onLock }) {
     frame = requestAnimationFrame(() => {
       applyFilters();
       renderGrid();
+      renderFilterState();
     });
   }
 
@@ -377,6 +429,44 @@ export function mountDirectory(root, { csv, onLock }) {
     controls.operator.disabled = inactive;
     controls.threshold.disabled = inactive;
     $('[data-unit]').textContent = inactive ? '—' : metricOptions[state.metric].unit;
+  }
+
+  function activeConditions() {
+    const items = [];
+    const search = state.search.trim();
+    if (search) items.push({ key: 'search', label: `キーワード「${search}」` });
+    if (state.category !== 'all') items.push({ key: 'category', label: `カテゴリ：${state.category}` });
+    if (state.metric !== 'none' && state.threshold !== '' && Number.isFinite(Number(state.threshold))) {
+      const { label, unit } = metricOptions[state.metric];
+      items.push({ key: 'numeric', label: `${label}が ${integerFormat.format(Number(state.threshold))}${unit} ${operatorPhrases[state.operator]}` });
+    }
+    if (state.sort !== 'source') items.push({ key: 'sort', label: `並び順：${sortOptions[state.sort]}` });
+    return items;
+  }
+
+  function renderFilterState() {
+    const items = activeConditions();
+    searchClear.hidden = !state.search;
+    searchField.classList.toggle('has-value', Boolean(state.search));
+    filterCount.hidden = !items.length;
+    filterCount.textContent = `${items.length}件の条件`;
+    resetButton.dataset.idle = String(!items.length);
+    activeFilters.hidden = !items.length;
+    activeFilters.innerHTML = items.length
+      ? `<span class="filters-active-label">適用中</span>${items.map((item) => `<button type="button" class="filter-chip" data-clear-filter="${item.key}" aria-label="${escapeHtml(item.label)} を解除"><span>${escapeHtml(item.label)}</span>${icons.xSmall}</button>`).join('')}`
+      : '';
+  }
+
+  function clearFilter(key) {
+    if (key === 'search') state.search = '';
+    else if (key === 'category') state.category = 'all';
+    else if (key === 'numeric') Object.assign(state, { metric: 'none', operator: 'gt', threshold: '' });
+    else if (key === 'sort') state.sort = 'source';
+    for (const [name, element] of Object.entries(controls)) element.value = state[name];
+    syncNumericControls();
+    scheduleRender();
+    // The removed chip took focus with it; move focus to the control that owns the condition.
+    ({ search: controls.search, category: controls.category, numeric: controls.metric, sort: controls.sort })[key]?.focus();
   }
 
   function resetFilters() {
@@ -439,8 +529,14 @@ export function mountDirectory(root, { csv, onLock }) {
       openModal(companies[Number(opener.dataset.open)], opener);
       return;
     }
+    const filterChip = event.target.closest('[data-clear-filter]');
+    if (filterChip) {
+      clearFilter(filterChip.dataset.clearFilter);
+      return;
+    }
     const action = event.target.closest('[data-action]')?.dataset.action;
     if (action === 'reset') resetFilters();
+    else if (action === 'clear-search') clearFilter('search');
     else if (action === 'lock') onLock();
     else if (action === 'close') closeModal();
     else if (action === 'top') window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
@@ -448,7 +544,14 @@ export function mountDirectory(root, { csv, onLock }) {
   }, { signal });
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && modal) closeModal();
+    if (event.key === 'Escape' && modal) {
+      closeModal();
+    } else if (event.key === 'Escape' && event.target === controls.search && state.search) {
+      clearFilter('search');
+    } else if (event.key === '/' && !modal && !event.metaKey && !event.ctrlKey && !event.altKey && !event.target.closest?.('input, textarea, select, [contenteditable="true"]')) {
+      event.preventDefault();
+      controls.search.focus();
+    }
   }, { signal });
 
   window.addEventListener('storage', (event) => {
@@ -465,6 +568,7 @@ export function mountDirectory(root, { csv, onLock }) {
   applyFilters();
   renderKpis();
   renderGrid();
+  renderFilterState();
 
   return {
     destroy() {

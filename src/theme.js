@@ -4,7 +4,7 @@ import { icons } from './icons.js';
 
 const STORAGE_KEY = 'hnavi.theme.v1';
 const THEMES = ['light', 'dark'];
-const THEME_COLORS = { light: '#f2f1ec', dark: '#0f1115' };
+const THEME_COLORS = { light: '#f5f7fc', dark: '#0a1122' };
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
 
 let chosenTheme = null; // Fallback when localStorage is blocked.
