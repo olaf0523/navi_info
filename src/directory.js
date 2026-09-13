@@ -1,5 +1,6 @@
 import { icons } from './icons.js';
 import { createMarkStore, MARK_COLORS } from './marks.js';
+import { themeToggleHtml } from './theme.js';
 
 const metricOptions = {
   capital: { label: '資本金', unit: '円' },
@@ -118,7 +119,8 @@ function shellHtml() {
         </a>
         <div class="topbar-actions">
           <span class="topbar-meta"><span class="status-dot" aria-hidden="true"></span>2026.09 データ</span>
-          <button type="button" class="lock-button" data-action="lock">${icons.lock}<span>ロック</span></button>
+          ${themeToggleHtml()}
+          <button type="button" class="lock-button" data-action="lock" aria-label="ロック">${icons.lock}<span>ロック</span></button>
         </div>
       </div>
     </header>

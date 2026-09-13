@@ -1,4 +1,5 @@
 import { icons } from './icons.js';
+import { themeToggleHtml } from './theme.js';
 
 const PIN_LENGTH = 15;
 const GROUP_SIZE = 5;
@@ -100,7 +101,10 @@ function template(entering) {
     <div class="lock-inner">
       <header class="lock-top">
         <div class="lock-brand"><span class="brand-mark" aria-hidden="true">HN</span><span>発注ナビ 企業ディレクトリ</span></div>
-        <span class="lock-badge">${icons.shield}<span>暗号化で保護</span></span>
+        <div class="lock-top-actions">
+          ${themeToggleHtml()}
+          <span class="lock-badge">${icons.shield}<span>暗号化で保護</span></span>
+        </div>
       </header>
       <main class="lock-main">
         <div class="lock-panel">
@@ -351,7 +355,6 @@ export function mountLock(root, { verify, preload, supported, entering = false, 
     if (/^[0-9]$/.test(event.key)) {
       event.preventDefault();
       press(event.key);
-      flash(`[data-digit="${event.key}"]`);
     } else if (event.key === 'Backspace') {
       event.preventDefault();
       backspace();

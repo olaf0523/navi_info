@@ -2,9 +2,12 @@ import './style.css';
 import { cryptoSupported, decryptVault, deriveKey, exportKey, importKey, parseVault } from './crypto.js';
 import { mountDirectory } from './directory.js';
 import { mountLock } from './lock.js';
+import { initTheme } from './theme.js';
 
 const VAULT_URL = `${import.meta.env.BASE_URL}data/companies.bin`;
 const SESSION_KEY = 'hnavi.session.v1';
+
+initTheme();
 
 const app = document.querySelector('#app');
 app.innerHTML = '<div data-layer="app"></div><div data-layer="lock"></div>';
