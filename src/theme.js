@@ -6,10 +6,8 @@ const STORAGE_KEY = 'hnavi.theme.v1';
 const THEMES = ['light', 'dark'];
 const THEME_COLORS = { light: '#f2f1ec', dark: '#0f1115' };
 const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 let chosenTheme = null; // Fallback when localStorage is blocked.
-let switchTimer = 0;
 
 function storedTheme() {
   try {
@@ -27,13 +25,9 @@ export function currentTheme() {
   return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
 }
 
-function applyTheme(theme, { animate = false } = {}) {
+// Switches instantly: a page-wide colour transition over ~60k elements blocked the main thread for over a second.
+function applyTheme(theme) {
   const root = document.documentElement;
-  if (animate && !reduceMotion.matches) {
-    root.classList.add('is-theme-switching');
-    clearTimeout(switchTimer);
-    switchTimer = setTimeout(() => root.classList.remove('is-theme-switching'), 320);
-  }
   root.dataset.theme = theme;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLORS[theme]);
   for (const button of document.querySelectorAll('[data-theme-set]')) {
@@ -61,15 +55,15 @@ export function initTheme() {
     } catch {
       // Storage blocked: the choice still applies for this page view.
     }
-    applyTheme(theme, { animate: true });
+    applyTheme(theme);
   });
 
   // Follow the OS setting until the user picks a mode.
   systemDark.addEventListener('change', () => {
-    if (!storedTheme()) applyTheme(preferredTheme(), { animate: true });
+    if (!storedTheme()) applyTheme(preferredTheme());
   });
 
   window.addEventListener('storage', (event) => {
-    if (event.key === STORAGE_KEY || event.key === null) applyTheme(preferredTheme(), { animate: true });
+    if (event.key === STORAGE_KEY || event.key === null) applyTheme(preferredTheme());
   });
 }
