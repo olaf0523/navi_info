@@ -470,6 +470,10 @@ a { color: inherit; }
 .field:hover { border-color: var(--m-border-strong); }
 .field:focus-within { border-color: var(--m-accent); background: var(--m-card); box-shadow: 0 0 0 4px var(--m-glow); }
 .field input, .field select { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background-color: transparent; color: var(--m-text); font-size: 14px; }
+.field select { padding-left: 12px; border-left: 1px solid var(--m-border-strong); }
+.field select, .numeric-control:is(select) { color: var(--m-text); color-scheme: light dark; }
+.field select option, .numeric-control:is(select) option { background-color: var(--m-card-2); color: var(--m-text); }
+.field select:focus, .numeric-control:is(select):focus { color: var(--m-text); background-color: var(--m-card-2); }
 .field input::placeholder, .numeric-input input::placeholder { color: var(--m-muted); opacity: 1; }
 .field input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
 .field > .icon, .field-icon { flex: none; color: var(--m-accent-text); }
