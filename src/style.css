@@ -485,9 +485,10 @@ a { color: inherit; }
   appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 22px;
   background-image: var(--chevron); background-repeat: no-repeat; background-position: right 2px center;
 }
-.filters-numeric { grid-template-columns: auto minmax(0, 1fr); gap: 14px; }
+.filters-numeric { grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; }
 .numeric-label { display: inline-flex; align-items: center; gap: 8px; padding-left: 4px; color: var(--m-soft); font-size: 13px; font-weight: 700; white-space: nowrap; }
-.numeric-group { display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 150px) minmax(0, 240px); gap: 8px; }
+.numeric-group { display: grid; gap: 8px; }
+.numeric-condition { display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 150px) minmax(0, 240px) 32px; gap: 8px; }
 .numeric-control { height: 44px; padding: 0 14px; border: 1px solid var(--m-border); border-radius: 12px; background-color: var(--m-card-2); color: var(--m-text); font-size: 13px; transition: border-color .15s ease, box-shadow .15s ease, opacity .15s ease; }
 .numeric-control:is(select) { padding-right: 32px; background-position: right 12px center; }
 .numeric-control:hover:not(:disabled) { border-color: var(--m-border-strong); }
@@ -497,6 +498,11 @@ a { color: inherit; }
 .numeric-input input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; color: var(--m-text); font-family: var(--app-mono); -moz-appearance: textfield; }
 .numeric-input input::-webkit-outer-spin-button, .numeric-input input::-webkit-inner-spin-button { margin: 0; -webkit-appearance: none; }
 .numeric-unit { display: grid; place-items: center; min-width: 28px; height: 24px; padding: 0 8px; border-radius: 999px; background: var(--m-track); color: var(--m-soft); font-size: 12px; }
+.numeric-add, .numeric-remove { display: inline-grid; place-items: center; height: 36px; border: 1px solid var(--m-border); border-radius: 10px; background: var(--m-card-2); color: var(--m-soft); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.numeric-add { padding: 0 12px; }
+.numeric-add:hover, .numeric-remove:hover { border-color: var(--m-accent); color: var(--m-accent-text); }
+.numeric-remove { width: 32px; padding: 0; align-self: center; }
+.numeric-remove .icon { width: 16px; height: 16px; }
 .filters-active { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 12px; border-top: 1px dashed var(--m-border-strong); }
 .filters-active-label { margin-right: 2px; color: var(--m-muted); font-size: 12px; }
 .filter-chip { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; height: 32px; padding: 0 7px 0 12px; border: 1px solid color-mix(in srgb, var(--m-accent) 35%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--m-accent) 10%, transparent); color: var(--m-accent-text); font-size: 12px; font-weight: 700; transition: background-color .15s ease, border-color .15s ease; }
@@ -771,8 +777,6 @@ a.pm-link:hover { color: var(--m-text); }
 @media (max-width: 1100px) {
   .pm-rail { display: none; }
   .modal { width: min(940px, 100%); }
-}
-@media (max-width: 860px) {
   .pm-info, .pm-perf, .pm-location, .pm-cats { grid-column: 1 / -1; }
 }
 @media (max-width: 680px) {
@@ -813,7 +817,7 @@ a.pm-link:hover { color: var(--m-text); }
   .filters-main { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .field-search { grid-column: 1 / -1; }
   .filters-numeric { grid-template-columns: minmax(0, 1fr); gap: 8px; }
-  .numeric-group { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .numeric-condition { grid-template-columns: repeat(3, minmax(0, 1fr)) 32px; }
 }
 @media (max-width: 680px) {
   .company-grid { grid-template-columns: minmax(0, 1fr); }
@@ -830,7 +834,7 @@ a.pm-link:hover { color: var(--m-text); }
   .kpi-sub-text { display: -webkit-box; overflow: hidden; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
   .filters { padding: 14px; }
   .filters-main { grid-template-columns: minmax(0, 1fr); }
-  .numeric-group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .numeric-condition { grid-template-columns: repeat(2, minmax(0, 1fr)) 32px; }
   .numeric-input { grid-column: 1 / -1; }
   .results-hint { display: none; }
 }

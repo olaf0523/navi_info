@@ -27,7 +27,8 @@ const HERO_WAVE = `<svg class="hero-wave" viewBox="0 0 800 300" preserveAspectRa
 </svg>`;
 const FIRST_BATCH = 36;
 const BATCH = 120;
-const defaultFilters = { search: '', category: 'all', sort: 'source', metric: 'none', operator: 'gt', threshold: '' };
+const createNumericCondition = () => ({ metric: 'none', operator: 'gte', threshold: '' });
+const defaultFilters = { search: '', category: 'all', sort: 'source' };
 
 const decimalFormat = new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1 });
 
@@ -116,6 +117,22 @@ function compare(value, operator, target) {
 }
 
 const optionsHtml = (options) => Object.entries(options).map(([value, label]) => `<option value="${value}">${label}</option>`).join('');
+const selectedOptionsHtml = (options, selected) => Object.entries(options).map(([value, label]) => `<option value="${value}"${value === selected ? ' selected' : ''}>${label}</option>`).join('');
+
+function numericConditionHtml(condition, index, canRemove) {
+  const inactive = condition.metric === 'none';
+  const unit = inactive ? '—' : metricOptions[condition.metric].unit;
+  return `<div class="numeric-condition" data-numeric-condition="${index}">
+    <select class="numeric-control" data-numeric-field="metric" aria-label="項目">${selectedOptionsHtml({ none: '条件なし', ...Object.fromEntries(Object.entries(metricOptions).map(([key, option]) => [key, option.label])) }, condition.metric)}</select>
+    <select class="numeric-control" data-numeric-field="operator" aria-label="比較方法"${inactive ? ' disabled' : ''}>${selectedOptionsHtml(operatorOptions, condition.operator)}</select>
+    <label class="numeric-control numeric-input">
+      <span class="sr-only">基準値</span>
+      <input data-numeric-field="threshold" type="number" min="0" step="1" inputmode="numeric" placeholder="値を入力" value="${escapeHtml(condition.threshold)}"${inactive ? ' disabled' : ''}>
+      <span class="numeric-unit" data-unit aria-hidden="true">${unit}</span>
+    </label>
+    <button type="button" class="numeric-remove" data-action="remove-numeric" data-index="${index}" aria-label="この数値条件を削除"${canRemove ? '' : ' hidden'}>${icons.xSmall}</button>
+  </div>`;
+}
 
 function shellHtml() {
   return `<div class="app-shell">
@@ -195,15 +212,8 @@ function shellHtml() {
         </div>
         <div class="filters-row filters-numeric">
           <span class="numeric-label" id="numericLabel"><span class="field-icon" aria-hidden="true">${icons.sliders}</span>数値条件</span>
-          <div class="numeric-group" role="group" aria-labelledby="numericLabel">
-            <select class="numeric-control" data-filter="metric" aria-label="項目"><option value="none">条件なし</option>${optionsHtml(Object.fromEntries(Object.entries(metricOptions).map(([key, option]) => [key, option.label])))}</select>
-            <select class="numeric-control" data-filter="operator" aria-label="比較方法" disabled>${optionsHtml(operatorOptions)}</select>
-            <label class="numeric-control numeric-input">
-              <span class="sr-only">基準値</span>
-              <input data-filter="threshold" type="number" min="0" step="1" inputmode="numeric" placeholder="値を入力" disabled>
-              <span class="numeric-unit" data-unit aria-hidden="true">—</span>
-            </label>
-          </div>
+          <div class="numeric-group" data-numeric-group role="group" aria-labelledby="numericLabel">${numericConditionHtml(createNumericCondition(), 0, false)}</div>
+          <button type="button" class="numeric-add" data-action="add-numeric">条件を追加</button>
         </div>
         <div class="filters-active" data-active-filters hidden></div>
       </section>
@@ -225,7 +235,7 @@ export function mountDirectory(root, { csv, onLock }) {
   const { signal } = controller;
   const marks = createMarkStore();
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const state = { ...defaultFilters };
+  const state = { ...defaultFilters, numeric: [createNumericCondition()] };
   let companies = [];
   let categories = [];
   let filtered = [];
@@ -246,6 +256,7 @@ export function mountDirectory(root, { csv, onLock }) {
   const activeFilters = $('[data-active-filters]');
   const filterCount = $('[data-filter-count]');
   const resetButton = $('.filters-head [data-action="reset"]');
+  const numericGroup = $('[data-numeric-group]');
 
   try {
     const { headers, records } = parseCsv(csv);
@@ -319,16 +330,15 @@ export function mountDirectory(root, { csv, onLock }) {
 
   function applyFilters() {
     const terms = normalize(state.search).split(/\s+/).filter(Boolean);
-    const target = state.threshold === '' ? NaN : Number(state.threshold);
-    const numericActive = state.metric !== 'none' && Number.isFinite(target);
+    const numericConditions = state.numeric.filter((condition) => condition.metric !== 'none' && condition.threshold !== '' && Number.isFinite(Number(condition.threshold)));
 
     const result = companies.filter((company) => {
       if (terms.length && !terms.every((term) => company.searchText.includes(term))) return false;
       if (state.category !== 'all' && !company.performance.some((entry) => entry.label === state.category)) return false;
-      if (numericActive) {
-        const value = metricValue(company, state.metric);
-        if (value === null || !compare(value, state.operator, target)) return false;
-      }
+      if (numericConditions.some((condition) => {
+        const value = metricValue(company, condition.metric);
+        return value === null || !compare(value, condition.operator, Number(condition.threshold));
+      })) return false;
       return true;
     });
 
@@ -425,10 +435,7 @@ export function mountDirectory(root, { csv, onLock }) {
   }
 
   function syncNumericControls() {
-    const inactive = state.metric === 'none';
-    controls.operator.disabled = inactive;
-    controls.threshold.disabled = inactive;
-    $('[data-unit]').textContent = inactive ? '—' : metricOptions[state.metric].unit;
+    numericGroup.innerHTML = state.numeric.map((condition, index) => numericConditionHtml(condition, index, state.numeric.length > 1)).join('');
   }
 
   function activeConditions() {
@@ -436,10 +443,11 @@ export function mountDirectory(root, { csv, onLock }) {
     const search = state.search.trim();
     if (search) items.push({ key: 'search', label: `キーワード「${search}」` });
     if (state.category !== 'all') items.push({ key: 'category', label: `カテゴリ：${state.category}` });
-    if (state.metric !== 'none' && state.threshold !== '' && Number.isFinite(Number(state.threshold))) {
-      const { label, unit } = metricOptions[state.metric];
-      items.push({ key: 'numeric', label: `${label}が ${integerFormat.format(Number(state.threshold))}${unit} ${operatorPhrases[state.operator]}` });
-    }
+    state.numeric.forEach((condition, index) => {
+      if (condition.metric === 'none' || condition.threshold === '' || !Number.isFinite(Number(condition.threshold))) return;
+      const { label, unit } = metricOptions[condition.metric];
+      items.push({ key: `numeric:${index}`, label: `${label}が ${integerFormat.format(Number(condition.threshold))}${unit} ${operatorPhrases[condition.operator]}` });
+    });
     if (state.sort !== 'source') items.push({ key: 'sort', label: `並び順：${sortOptions[state.sort]}` });
     return items;
   }
@@ -460,17 +468,22 @@ export function mountDirectory(root, { csv, onLock }) {
   function clearFilter(key) {
     if (key === 'search') state.search = '';
     else if (key === 'category') state.category = 'all';
-    else if (key === 'numeric') Object.assign(state, { metric: 'none', operator: 'gt', threshold: '' });
+    else if (key.startsWith('numeric:')) {
+      const index = Number(key.slice('numeric:'.length));
+      state.numeric.splice(index, 1);
+      if (!state.numeric.length) state.numeric.push(createNumericCondition());
+    }
     else if (key === 'sort') state.sort = 'source';
-    for (const [name, element] of Object.entries(controls)) element.value = state[name];
     syncNumericControls();
+    for (const [name, element] of Object.entries(controls)) element.value = state[name];
     scheduleRender();
     // The removed chip took focus with it; move focus to the control that owns the condition.
-    ({ search: controls.search, category: controls.category, numeric: controls.metric, sort: controls.sort })[key]?.focus();
+    ({ search: controls.search, category: controls.category, sort: controls.sort })[key]?.focus();
   }
 
   function resetFilters() {
     Object.assign(state, defaultFilters);
+    state.numeric = [createNumericCondition()];
     for (const [name, element] of Object.entries(controls)) element.value = state[name];
     syncNumericControls();
     scheduleRender();
@@ -505,6 +518,23 @@ export function mountDirectory(root, { csv, onLock }) {
   }
 
   root.addEventListener('change', (event) => {
+    const field = event.target.closest('[data-numeric-field]');
+    if (!field) return;
+    const index = Number(field.closest('[data-numeric-condition]').dataset.numericCondition);
+    state.numeric[index][field.dataset.numericField] = field.value;
+    if (field.dataset.numericField === 'metric') syncNumericControls();
+    scheduleRender();
+  }, { signal });
+
+  root.addEventListener('input', (event) => {
+    const field = event.target.closest('[data-numeric-field="threshold"]');
+    if (!field) return;
+    const index = Number(field.closest('[data-numeric-condition]').dataset.numericCondition);
+    state.numeric[index].threshold = field.value;
+    scheduleRender();
+  }, { signal });
+
+  root.addEventListener('change', (event) => {
     const input = event.target.closest('[data-mark-input]');
     if (!input) return;
     const company = companies[Number(input.dataset.markInput)];
@@ -536,6 +566,18 @@ export function mountDirectory(root, { csv, onLock }) {
     }
     const action = event.target.closest('[data-action]')?.dataset.action;
     if (action === 'reset') resetFilters();
+    else if (action === 'add-numeric') {
+      if (state.numeric.length < 5) state.numeric.push(createNumericCondition());
+      syncNumericControls();
+      numericGroup.lastElementChild?.querySelector('[data-numeric-field="metric"]').focus();
+      renderFilterState();
+    } else if (action === 'remove-numeric') {
+      const index = Number(event.target.closest('[data-action="remove-numeric"]').dataset.index);
+      state.numeric.splice(index, 1);
+      if (!state.numeric.length) state.numeric.push(createNumericCondition());
+      syncNumericControls();
+      scheduleRender();
+    }
     else if (action === 'clear-search') clearFilter('search');
     else if (action === 'lock') onLock();
     else if (action === 'close') closeModal();
